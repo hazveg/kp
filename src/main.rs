@@ -1,53 +1,39 @@
-use keepass::{
-    db::NodeRef,
-    Database,
-    DatabaseKey,
-    error::DatabaseOpenError,
-};
-use std::fs::File;
-use std::path::Path;
+mod file;
+mod db_interaction;
+
+use db_interaction::Action;
+
+use keepass::DatabaseKey;
 use clap::Parser;
 
 #[derive(Default, Parser, Debug)]
-#[clap(author="hazveg", version="0.1.0", about)]
+#[clap(author="hazveg", version="0.2.0", about)]
 /// A simple KeePass database reader
-struct Arguments {
+pub struct Arguments {
     /// The path to the database file
     path: String,
-    /// The password to open the database
-    password: String,
-}
-
-fn open_db_file(path: &Path, key: DatabaseKey) -> Result<Database, DatabaseOpenError> {
-    let mut file = File::open(path)?;
-    Database::open(&mut file, key)
-}
-
-#[allow(dead_code)]
-fn debug_db_root(database: &Database) {
-    for node in &database.root {
-        match node {
-            NodeRef::Group(group) => {
-                println!("Group: {}", group.name);
-            }
-            NodeRef::Entry(entry) => {
-                println!("Entry: {}", entry.get_title().unwrap());
-            }
-        }
-    }
+    /// The action to be performed {list, select}
+    action: Option<String>,
+    /// The keyword that shall be searched for (if action is 'select')
+    keyword: Option<String>,
+    /// The password to unlock the database
+    #[arg(short, long)]
+    password: Option<String>,
 }
 
 fn main() {
     let args = Arguments::parse();
-    dbg!(&args);
+    
+    let password = file::set_password(&args);
+    let database = file::unlock_database(args.path, DatabaseKey::with_password(&password));
 
-    let path = std::path::Path::new("Database.kdbx");
-
-    #[allow(unused_variables)]
-    let database = match open_db_file(path, DatabaseKey::with_password(".DyLm69420.Hunter.651.")) {
-        Ok(db) => db,
-        Err(e) => panic!("Error opening database: {:?}", e),
+    let action = match args.action {
+        Some(action) => db_interaction::define_action(&action[..]),
+        None => Action::List
     };
 
-    //debug_db_root(&database);
+    match action {
+        Action::List => db_interaction::list_entries(&database),
+        Action::Select => db_interaction::select_entries(&database, args.keyword),
+    }
 }
