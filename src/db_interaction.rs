@@ -6,14 +6,30 @@ pub enum Action {
 }
 
 #[derive(Debug)]
-struct EntryData {
+pub struct EntryData {
     title: String,
+    username: String,
     password: String,
 }
 
 impl EntryData {
-    fn new(title: &str, password: &str) -> Self {
-        EntryData { title: title.to_string(), password: password.to_string() }
+    fn new(title: &str, username: &str,  password: &str) -> Self {
+        EntryData {
+            title: title.to_string(),
+            username: username.to_string(),
+            password: password.to_string(),
+        }
+    }
+
+    fn output(&self) {
+        println!("------- {} --------", self.title);
+        println!("Username: {}", self.username);
+        println!("Password: {}", self.password);
+        println!();
+    }
+
+    fn title(&self) -> &str {
+        &self.title[..]
     }
 }
 
@@ -50,7 +66,7 @@ pub fn list_entries(database: &Database) {
     }
 }
 
-pub fn select_entries(database: &Database, keyword: Option<String>) {
+pub fn select_entries(database: &Database, keyword: &Option<String>) -> Vec<EntryData>{
     if keyword.is_none() {
         eprintln!("no keywords given!");
     }
@@ -68,12 +84,47 @@ pub fn select_entries(database: &Database, keyword: Option<String>) {
 
                 entries.push(EntryData::new(
                     entry_title,
-                    entry.get_password().unwrap(),
+                    entry.get_username().unwrap_or("No Username"),
+                    entry.get_password().unwrap_or("No Password"),
                 ));
             },
             _ => {}
         }
     }
 
-    dbg!(&entries);
+    entries
+}
+
+fn select_entry_from_list(entry_list: &Vec<EntryData>) -> usize {
+    let mut i = 1;
+
+    for entry in entry_list {
+        println!("[{}]: {}", i, entry.title());
+        i += 1;
+    }
+
+    println!("Multiple Entries matched your query. Please select one:");
+    let mut selected_entry = String::new();
+    if let Ok(_) = std::io::stdin().read_line(&mut selected_entry) {
+        selected_entry.parse::<usize>().unwrap()
+    } else {
+        panic!("failed to read selection!");
+    }
+}
+
+pub fn output_selection(entry_list: Vec<EntryData>) -> bool {
+    if entry_list.is_empty() {
+        return false;
+    }
+
+    if entry_list.len() == 1 {
+        entry_list[0].output();
+        return true ;
+    }
+    
+    let selection = select_entry_from_list(&entry_list);
+
+    entry_list[selection - 1].output();
+
+    true
 }

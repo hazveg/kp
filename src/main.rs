@@ -1,5 +1,6 @@
 mod file;
 mod db_interaction;
+mod string_match;
 
 use db_interaction::Action;
 
@@ -34,6 +35,12 @@ fn main() {
 
     match action {
         Action::List => db_interaction::list_entries(&database),
-        Action::Select => db_interaction::select_entries(&database, args.keyword),
+        Action::Select => {
+            let entry_list = db_interaction::select_entries(&database, &args.keyword);
+
+            if !db_interaction::output_selection(entry_list) {
+                eprintln!("No entries pertaining to `{}` were found", &args.keyword.unwrap());
+            }
+        },
     }
 }
