@@ -18,7 +18,13 @@ fn compare(val0: usize, val1: usize, val2: usize) -> usize {
     }
 }
 
-fn minimum_distance(word0: &str, word1: &str) -> usize {
+// Levenshtein Distance
+//
+// Copied from here, refer to this in case not understood:
+// https://www.youtube.com/watch?v=XYi2-LPrwm4
+//
+// I don't understand it anyway
+pub fn minimum_distance(word0: &str, word1: &str) -> usize {
     let mut cache = vec![vec![0; word1.len() + 1]; word0.len() + 1];
 
     for j in 0..(word1.len() + 1) {
@@ -28,12 +34,12 @@ fn minimum_distance(word0: &str, word1: &str) -> usize {
         cache[i][word1.len()] = word0.len() - i
     }
 
-    for i in ((word0.len() - 1) as i32)..-1 {
-        for j in ((word1.len() - 1) as i32)..-1 {
-            if word0.chars().nth(i as usize) == word1.chars().nth(j as usize) {
-                cache[i as usize][j as usize] = cache[i as usize + 1][j as usize + 1];
+    for i in (0..word0.len()).rev() {
+        for j in (0..word1.len()).rev() {
+            if word0.chars().nth(i) == word1.chars().nth(j) {
+                cache[i][j] = cache[i + 1][j + 1];
             } else {
-                cache[i as usize][j as usize] = 1 + compare(cache[i as usize + 1][j as usize], cache[i as usize][j as usize + 1], cache[i as usize + 1][j as usize + 1]);
+                cache[i][j] = 1 + compare(cache[i + 1][j], cache[i][j + 1], cache[i + 1][j + 1]);
             }
         }
     }
@@ -43,6 +49,8 @@ fn minimum_distance(word0: &str, word1: &str) -> usize {
 
 #[cfg(test)]
 mod tests {
+    use crate::string_match::compare;
+
     use super::minimum_distance;
 
     #[test]
@@ -50,6 +58,15 @@ mod tests {
         let word0 = "abc";
         let word1 = "doodle";
 
-        assert_eq!(minimum_distance(word0, word1), 0);
+        assert_eq!(minimum_distance(word0, word1), 6);
+    }
+    
+    #[test]
+    fn dfae() {
+        let val0 = 0;
+        let val1 = 3;
+        let val2 = 4;
+
+        assert_eq!(val0, compare(val0, val1, val2));
     }
 }

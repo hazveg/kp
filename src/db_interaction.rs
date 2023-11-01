@@ -1,5 +1,7 @@
 use keepass::{db::NodeRef, Database};
 
+use crate::string_match;
+
 pub enum Action {
     List,
     Select,
@@ -78,7 +80,7 @@ pub fn select_entries(database: &Database, keyword: &Option<String>) -> Vec<Entr
                 let entry_title = entry.get_title().unwrap();
                 
                 // TODO: Make this fuzzy match
-                if entry_title != keyword.as_ref().unwrap() {
+                if string_match::minimum_distance(entry_title, keyword.as_ref().unwrap()) > 2 {
                     continue;
                 }
 
@@ -95,6 +97,13 @@ pub fn select_entries(database: &Database, keyword: &Option<String>) -> Vec<Entr
     entries
 }
 
+fn prompt_for_entry() -> Result<usize, std::num::ParseIntError> {
+    println!("Multiple Entries matched your query. Please select one:");
+    let mut selected_entry = String::new();
+    let _ = std::io::stdin().read_line(&mut selected_entry);
+    selected_entry.trim().parse::<usize>()
+}
+
 fn select_entry_from_list(entry_list: &Vec<EntryData>) -> usize {
     let mut i = 1;
 
@@ -103,12 +112,9 @@ fn select_entry_from_list(entry_list: &Vec<EntryData>) -> usize {
         i += 1;
     }
 
-    println!("Multiple Entries matched your query. Please select one:");
-    let mut selected_entry = String::new();
-    if let Ok(_) = std::io::stdin().read_line(&mut selected_entry) {
-        selected_entry.parse::<usize>().unwrap()
-    } else {
-        panic!("failed to read selection!");
+    match prompt_for_entry() {
+        Ok(result) => result,
+        Err(_) => 1,
     }
 }
 
@@ -124,7 +130,7 @@ pub fn output_selection(entry_list: Vec<EntryData>) -> bool {
     
     let selection = select_entry_from_list(&entry_list);
 
-    entry_list[selection - 1].output();
+    entry_list[(selection - 1) as usize].output();
 
     true
 }
