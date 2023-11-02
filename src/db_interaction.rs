@@ -57,7 +57,6 @@ pub fn debug_db_root(database: &Database) {
 }
 
 pub fn list_entries(database: &Database) {
-    println!("Entries:");
     for node in &database.root {
         match node {
             NodeRef::Entry(entry) => {
@@ -68,7 +67,7 @@ pub fn list_entries(database: &Database) {
     }
 }
 
-pub fn select_entries(database: &Database, keyword: &Option<String>) -> Vec<EntryData>{
+pub fn select_entries(database: &Database, keyword: &Option<String>, explicit_flag: &bool) -> Vec<EntryData>{
     if keyword.is_none() {
         eprintln!("no keywords given!");
     }
@@ -78,10 +77,15 @@ pub fn select_entries(database: &Database, keyword: &Option<String>) -> Vec<Entr
         match node {
             NodeRef::Entry(entry) => {
                 let entry_title = entry.get_title().unwrap();
-                
-                // TODO: Make this fuzzy match
-                if string_match::minimum_distance(entry_title, keyword.as_ref().unwrap()) > 2 {
-                    continue;
+
+                if !explicit_flag {
+                    if !string_match::match_entry_names(entry_title, keyword.as_ref().unwrap()) {
+                        continue;
+                    }
+                } else {
+                    if entry_title != keyword.as_ref().unwrap() {
+                        continue;
+                    }
                 }
 
                 entries.push(EntryData::new(

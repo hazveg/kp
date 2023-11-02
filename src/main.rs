@@ -15,6 +15,9 @@ pub struct Arguments {
     path: String,
     /// The action to be performed {list, select}
     action: Option<String>,
+    /// Explicitly search for the given keyword instead of fuzzy matching
+    #[arg(default_value_t=false, short, long)]
+    explicit: bool,
     /// The keyword that shall be searched for (if action is 'select')
     keyword: Option<String>,
     /// The password to unlock the database
@@ -36,7 +39,7 @@ fn main() {
     match action {
         Action::List => db_interaction::list_entries(&database),
         Action::Select => {
-            let entry_list = db_interaction::select_entries(&database, &args.keyword);
+            let entry_list = db_interaction::select_entries(&database, &args.keyword, &args.explicit);
 
             if !db_interaction::output_selection(entry_list) {
                 eprintln!("No entries pertaining to `{}` were found", &args.keyword.unwrap());

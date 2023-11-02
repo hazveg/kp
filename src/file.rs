@@ -7,7 +7,7 @@ pub fn unlock_database(path: String, key: DatabaseKey) -> Database {
         Ok(file) => file,
         Err(e) => panic!("Failed to open given file: {}", e),
     };
-
+    
     match Database::open(&mut file, key) {
         Ok(db) => db,
         Err(e) => {

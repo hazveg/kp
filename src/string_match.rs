@@ -24,7 +24,7 @@ fn compare(val0: usize, val1: usize, val2: usize) -> usize {
 // https://www.youtube.com/watch?v=XYi2-LPrwm4
 //
 // I don't understand it anyway
-pub fn minimum_distance(word0: &str, word1: &str) -> usize {
+fn minimum_distance(word0: &str, word1: &str) -> usize {
     let mut cache = vec![vec![0; word1.len() + 1]; word0.len() + 1];
 
     for j in 0..(word1.len() + 1) {
@@ -45,6 +45,22 @@ pub fn minimum_distance(word0: &str, word1: &str) -> usize {
     }
 
     cache[0][0]
+}
+
+pub fn match_entry_names(entry0: &str, entry1: &str) -> bool {
+    let entry0_words = entry0.split_whitespace();
+
+    for word0 in entry0_words {
+        // i have no fucking clue why this works, but declaring both variables beforehand doesn't
+        // but whatever, it works.
+        for word1 in entry1.split_whitespace() {
+            if minimum_distance(word0, word1) <= 2 {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 #[cfg(test)]
