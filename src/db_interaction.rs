@@ -2,11 +2,6 @@ use keepass::{db::NodeRef, Database};
 
 use crate::string_match;
 
-pub enum Action {
-    List,
-    Select,
-}
-
 #[derive(Debug)]
 pub struct EntryData {
     title: String,
@@ -32,14 +27,6 @@ impl EntryData {
 
     fn title(&self) -> &str {
         &self.title[..]
-    }
-}
-
-pub fn define_action(action: &str) -> Action {
-    match action {
-        "list" => Action::List,
-        "select" => Action::Select,
-        _ => Action::List,
     }
 }
 
@@ -83,7 +70,7 @@ pub fn select_entries(database: &Database, keyword: &Option<String>, explicit_fl
                         continue;
                     }
                 } else {
-                    if entry_title != keyword.as_ref().unwrap() {
+                    if &entry_title != keyword.as_ref().unwrap() {
                         continue;
                     }
                 }

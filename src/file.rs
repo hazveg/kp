@@ -1,6 +1,6 @@
 use keepass::{DatabaseKey, Database, error::{DatabaseOpenError, DatabaseKeyError}};
 
-pub fn unlock_database(path: String, key: DatabaseKey) -> Database {
+pub fn unlock_database(path: &str, key: DatabaseKey) -> Database {
     let path = std::path::Path::new(&path);
 
     let mut file = match std::fs::File::open(path) {
@@ -27,7 +27,7 @@ pub fn unlock_database(path: String, key: DatabaseKey) -> Database {
     }
 }
 
-pub fn set_password(args: &crate::Arguments) -> String {
+pub fn set_password(args: &crate::argument_parsing::Arguments) -> String {
     if args.password == None {
         match rpassword::prompt_password("Database master password: ") {
             Ok(password) => password,
