@@ -1,2 +1,4 @@
 # kp
 CLI keepass database reader
+
+NEVER USE THIS, THIS TOOK TOO FUCKING LONG FOR LITTLE PAYOFF
