@@ -1,3 +1,4 @@
+use copypasta::{ClipboardProvider, ClipboardContext};
 use keepass::{db::NodeRef, Database};
 
 use crate::string_match;
@@ -23,10 +24,21 @@ impl EntryData {
         }
     }
 
-    fn output(&self) {
+    fn output(&self, clipboard_context: &mut ClipboardContext) {
+        let success;
+        match clipboard_context.set_contents(self.password.to_owned()) {
+            Ok(_) => success = true,
+            Err(_) => success = false,
+        }
+
         println!("------- {} --------", self.title);
         println!("Username: {}", self.username);
-        println!("Password: {}", self.password);
+        if success {
+            println!("Password: [copied to clipboard]");
+        } else {
+            eprintln!("Clipboard Insertion failed, displaying instead");
+            println!("Password: {}", self.password);
+        }
         println!();
     }
 
@@ -122,19 +134,19 @@ fn select_entry_from_list(entry_list: &Vec<EntryData>) -> usize {
     }
 }
 
-pub fn output_selection(entry_list: Vec<EntryData>) -> bool {
+pub fn output_selection(entry_list: Vec<EntryData>, clipboard_context: &mut ClipboardContext) -> bool {
     if entry_list.is_empty() {
         return false;
     }
 
     if entry_list.len() == 1 {
-        entry_list[0].output();
+        entry_list[0].output(clipboard_context);
         return true ;
     }
     
     let selection = select_entry_from_list(&entry_list);
 
-    entry_list[(selection - 1) as usize].output();
+    entry_list[(selection - 1) as usize].output(clipboard_context);
 
     true
 }
