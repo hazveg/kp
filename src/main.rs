@@ -6,7 +6,7 @@ use db_interaction::Action;
 
 use keepass::DatabaseKey;
 use clap::Parser;
-use copypasta::ClipboardContext;
+use cli_clipboard::{ClipboardContext, ClipboardProvider};
 
 #[derive(Default, Parser, Debug)]
 #[clap(author="hazveg", version="0.2.0", about)]

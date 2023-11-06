@@ -1,4 +1,4 @@
-use copypasta::{ClipboardProvider, ClipboardContext};
+use cli_clipboard::{ClipboardProvider, ClipboardContext};
 use keepass::{db::NodeRef, Database};
 
 use crate::string_match;
