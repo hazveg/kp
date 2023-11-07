@@ -6,7 +6,7 @@ use db_interaction::Action;
 
 use keepass::DatabaseKey;
 use clap::Parser;
-use cli_clipboard::{ClipboardContext, ClipboardProvider};
+use arboard::Clipboard;
 
 #[derive(Default, Parser, Debug)]
 #[clap(author="hazveg", version="0.2.0", about)]
@@ -40,10 +40,10 @@ fn main() {
     match action {
         Action::List => db_interaction::list_entries(&database),
         Action::Select => {
-            let mut clipboard_context = ClipboardContext::new().unwrap();
+            let mut clipboard = Clipboard::new().unwrap();
             let entry_list = db_interaction::select_entries(&database, &args.keyword, &args.explicit);
 
-            if !db_interaction::output_selection(entry_list, &mut clipboard_context) {
+            if !db_interaction::output_selection(entry_list, &mut clipboard) {
                 eprintln!("No entries pertaining to `{}` were found", &args.keyword.unwrap());
             }
         },

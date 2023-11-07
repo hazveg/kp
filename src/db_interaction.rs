@@ -1,4 +1,4 @@
-use cli_clipboard::{ClipboardProvider, ClipboardContext};
+use arboard::Clipboard;
 use keepass::{db::NodeRef, Database};
 
 use crate::string_match;
@@ -24,9 +24,9 @@ impl EntryData {
         }
     }
 
-    fn output(&self, clipboard_context: &mut ClipboardContext) {
+    fn output(&self, clipboard_context: &mut Clipboard) {
         let success;
-        match clipboard_context.set_contents(self.password.to_owned()) {
+        match clipboard_context.set_text(self.password.to_owned()) {
             Ok(_) => success = true,
             Err(_) => success = false,
         }
@@ -34,7 +34,8 @@ impl EntryData {
         println!("------- {} --------", self.title);
         println!("Username: {}", self.username);
         if success {
-            println!("Password: [copied to clipboard]");
+            println!("Password: [copied to clipboard], clearing in 10s...");
+            std::thread::sleep(std::time::Duration::from_secs(10));
         } else {
             eprintln!("Clipboard Insertion failed, displaying instead");
             println!("Password: {}", self.password);
@@ -134,7 +135,7 @@ fn select_entry_from_list(entry_list: &Vec<EntryData>) -> usize {
     }
 }
 
-pub fn output_selection(entry_list: Vec<EntryData>, clipboard_context: &mut ClipboardContext) -> bool {
+pub fn output_selection(entry_list: Vec<EntryData>, clipboard_context: &mut Clipboard) -> bool {
     if entry_list.is_empty() {
         return false;
     }
