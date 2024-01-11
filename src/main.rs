@@ -1,4 +1,7 @@
 mod argument_parsing;
+mod task;
+
+use task::Task;
 
 #[derive(PartialEq, Debug)]
 pub enum Action {
@@ -6,22 +9,23 @@ pub enum Action {
     Grep,
     Add,
     Show,
-}
-
-#[derive(Debug)]
-pub struct Task {
-    action: Action,
-    resource: Option<String>,
+    DisplayHelp
 }
 
 fn main() {
     let task = match argument_parsing::parse_arguments(std::env::args()) {
         Err(e) => {
-            eprintln!("{}", e);
+            eprintln!("kp: {}\nPlease refer to \"kp --help\".", e);
             std::process::exit(1);
         },
         Ok(task) => task,
     };
 
-    dbg!(task);
+    match task::perform_task(task) {
+        Err(e) => {
+            eprintln!("kp: {}\nPlease input a valid value.", e);
+            std::process::exit(2);
+        },
+        Ok(()) => {},
+    }
 }
